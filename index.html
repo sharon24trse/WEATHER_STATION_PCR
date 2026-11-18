@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#15325b">
+    <meta name="application-name" content="Weather Station PCR">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Weather Station PCR">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/svg+xml" href="./icon.svg">
+    <link rel="apple-touch-icon" href="./icon.svg">
     <title>Monitoring Weather Station - Politeknik Caltex Riau</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -407,7 +415,8 @@
 
         .weather-subgrid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 12px;
             text-align: center;
             padding-top: 18px;
         }
@@ -620,8 +629,7 @@
             <div class="pcr-logo">
                 <span class="pcr-accent">Politeknik</span> Caltex Riau
             </div>
-            <p class="student-info">NAMA: SHARON</p>
-            <p class="student-info">KELAS: 2 TRSE A</p>
+            <p class="student-info">Sistem Monitoring Cuaca Berbasis IoT</p>
         </div>
     </aside>
 
@@ -633,7 +641,7 @@
                 <i class="fa-solid fa-chart-simple"></i>
                 <div>
                     <h1>Monitoring Weather Station</h1>
-                    <p>Real-Time Data dari Sensor</p>
+                    <p>Pemantauan Kondisi Cuaca</p>
                 </div>
             </div>
 
@@ -674,6 +682,15 @@
                     </div>
                 </div>
 
+                <div class="kpi-card hum">
+                    <div class="kpi-icon"><i class="fa-solid fa-gauge-high"></i></div>
+                    <div class="kpi-info">
+                        <span class="label">Tekanan Udara</span>
+                        <h3 id="val-tekanan">1010.2 hPa</h3>
+                        <span class="badge-trend trend-flat" id="delta-tekanan">→ 0.0 hPa</span>
+                    </div>
+                </div>
+
                 <div class="kpi-card wind">
                     <div class="kpi-icon">
                         <i class="fa-solid fa-wind"></i>
@@ -696,6 +713,14 @@
                     <div class="compass-box" title="Arah Mata Angin">
                         <span class="compass-n">N</span>
                         <i class="fa-solid fa-location-arrow compass-arrow" id="compass-needle"></i>
+                    </div>
+                </div>
+                <div class="kpi-card dir">
+                    <div class="kpi-icon"><i class="fa-solid fa-cloud-rain"></i></div>
+                    <div class="kpi-info">
+                        <span class="label">Curah Hujan</span>
+                        <h3 id="val-hujan">0.0 mm</h3>
+                        <span class="badge-trend trend-flat">Pengukuran hujan</span>
                     </div>
                 </div>
             </div>
@@ -750,6 +775,16 @@
                             <span>Arah Angin</span>
                             <strong id="sub-arah">NE (45°)</strong>
                         </div>
+                        <div class="weather-subitem">
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <span>Tekanan Udara</span>
+                            <strong id="sub-tekanan">1010.2 hPa</strong>
+                        </div>
+                        <div class="weather-subitem">
+                            <i class="fa-solid fa-cloud-rain"></i>
+                            <span>Curah Hujan</span>
+                            <strong id="sub-hujan">0.0 mm</strong>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -770,8 +805,10 @@
                                     <th>Waktu</th>
                                     <th>Suhu (°C)</th>
                                     <th>Kelembapan (%)</th>
+                                    <th>Tekanan (hPa)</th>
                                     <th>Kecepatan Angin (m/s)</th>
                                     <th>Arah Angin</th>
+                                    <th>Curah Hujan (mm)</th>
                                 </tr>
                             </thead>
                             <tbody id="tabel-ringkas"></tbody>
@@ -799,7 +836,7 @@
                                 <i class="fa-solid fa-database"></i>
                             </div>
                             <span class="status-label">Database</span>
-                            <span class="status-val" id="st-db">Terhubung</span>
+                            <span class="status-val" id="st-db">Belum terhubung</span>
                         </div>
                         <div class="status-item">
                             <div class="status-circle green">
@@ -813,13 +850,13 @@
             </div>
         </section>
 
-        <!-- VIEW 2: RIWAYAT DATA (9 PARAMETER PROPOSAL PCR) -->
+        <!-- VIEW 2: RIWAYAT DATA (6 PARAMETER CUACA) -->
         <section id="view-riwayat" class="section-view">
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">
                         <i class="fa-solid fa-database"></i>
-                        <span>Riwayat Lengkap 9 Parameter Sensor Cuaca</span>
+                        <span>Riwayat 6 Parameter Cuaca</span>
                     </div>
                     <button class="btn-export" onclick="exportCSV()">
                         <i class="fa-solid fa-file-csv"></i> Unduh CSV
@@ -833,12 +870,9 @@
                                 <th>Suhu (°C)</th>
                                 <th>Kelembapan (%)</th>
                                 <th>Tekanan (hPa)</th>
-                                <th>Angin (m/s)</th>
+                                <th>Kecepatan Angin (m/s)</th>
                                 <th>Arah Angin</th>
                                 <th>Curah Hujan (mm)</th>
-                                <th>Cahaya (Lux)</th>
-                                <th>Radiasi (W/m²)</th>
-                                <th>Sinar UV</th>
                             </tr>
                         </thead>
                         <tbody id="tabel-lengkap"></tbody>
@@ -861,11 +895,11 @@
                         <label for="mode-sumber">Sumber Data Dashboard:</label>
                         <select id="mode-sumber" onchange="ubahModeSumber()">
                             <option value="simulasi" selected>Mode Simulasi Real-Time (GitHub Pages / Offline)</option>
-                            <option value="api">Mode Live Server (Backend Java + MySQL)</option>
+                            <option value="api">Mode Data Sensor (API Backend)</option>
                         </select>
                     </div>
                     <div class="form-group" id="grup-api-url" style="display: none;">
-                        <label for="api-url">URL Endpoint API Backend Java:</label>
+                        <label for="api-url">URL Endpoint API:</label>
                         <input type="text" id="api-url" value="http://localhost:8080/api/weather/dashboard">
                     </div>
                     <div class="form-group">
@@ -888,17 +922,19 @@
                     </div>
                 </div>
                 <div class="about-content">
-                    <p><strong>Judul Proyek:</strong> Perancangan Weather Station Berbasis IoT (ESP32)</p>
+                    <p><strong>Judul Proyek:</strong> Sistem Pemantauan Kondisi Cuaca Berbasis Internet of Things (IoT)</p>
                     <p><strong>Institusi:</strong> Program Studi Teknologi Rekayasa Sistem Elektronika (TRSE), Politeknik Caltex Riau</p>
-                    <p><strong>Parameter Terukur (9 Parameter):</strong></p>
+                    <p><strong>Mikrokontroler:</strong> ESP32</p>
+                    <p><strong>Parameter Pengukuran:</strong></p>
                     <ul>
-                        <li>Suhu, Kelembapan, dan Tekanan Udara (Sensor BME280)</li>
-                        <li>Intensitas Cahaya (Sensor GY-302 / BH1750)</li>
-                        <li>Kecepatan Angin (Anemometer) & Arah Angin (Wind Vane)</li>
-                        <li>Curah Hujan (Rain Gauge Tipping Bucket)</li>
-                        <li>Radiasi Matahari (Pyranometer) & Indeks Sinar UV</li>
+                        <li>Suhu udara</li>
+                        <li>Kelembapan udara</li>
+                        <li>Tekanan udara</li>
+                        <li>Kecepatan angin</li>
+                        <li>Arah angin</li>
+                        <li>Curah hujan</li>
                     </ul>
-                    <p><strong>Data Communication & Database:</strong> Sharon Laina Sidauruk (2 TRSE A)</p>
+                    <p>Data dari sensor akan diproses oleh mikrokontroler dan ditampilkan pada dashboard monitoring. Saat ini website menggunakan data simulasi karena koneksi sensor dan database belum diaktifkan.</p>
                 </div>
             </div>
         </section>
@@ -912,14 +948,14 @@
         let intervalMs = 5000;
         let timerId = null;
 
-        // Data awal simulasi (9 parameter sesuai proposal PCR)
+        // Data awal simulasi (6 parameter cuaca)
         let riwayatSensor = [
-            { waktu: '16 Nov 2026 14:59:52', suhu: 24.90, kelembaban: 44, tekanan: 1011.1, angin: 0.7, arahTeks: 'NE', arahDeg: 45, hujan: 0.0, cahaya: 480, radiasi: 340, uv: 3.6 },
-            { waktu: '16 Nov 2026 15:00:02', suhu: 25.10, kelembaban: 44, tekanan: 1011.0, angin: 0.8, arahTeks: 'NE', arahDeg: 45, hujan: 0.0, cahaya: 495, radiasi: 355, uv: 3.8 },
-            { waktu: '16 Nov 2026 15:00:12', suhu: 25.00, kelembaban: 43, tekanan: 1010.8, angin: 0.9, arahTeks: 'NE', arahDeg: 45, hujan: 0.0, cahaya: 510, radiasi: 370, uv: 3.9 },
-            { waktu: '16 Nov 2026 15:00:22', suhu: 25.20, kelembaban: 42, tekanan: 1010.6, angin: 0.8, arahTeks: 'NE', arahDeg: 45, hujan: 0.0, cahaya: 515, radiasi: 378, uv: 4.0 },
-            { waktu: '16 Nov 2026 15:00:27', suhu: 24.80, kelembaban: 44, tekanan: 1010.5, angin: 0.8, arahTeks: 'NE', arahDeg: 45, hujan: 0.0, cahaya: 505, radiasi: 365, uv: 3.9 },
-            { waktu: '16 Nov 2026 15:00:32', suhu: 25.30, kelembaban: 43, tekanan: 1010.2, angin: 0.8, arahTeks: 'NE', arahDeg: 45, hujan: 0.0, cahaya: 520, radiasi: 385, uv: 4.1 }
+            { waktu: '16 Nov 2026 14:59:52', suhu: 24.90, kelembaban: 44, tekanan: 1011.1, angin: 0.7, arahTeks: 'NE', arahDeg: 45, hujan: 0.0 },
+            { waktu: '16 Nov 2026 15:00:02', suhu: 25.10, kelembaban: 44, tekanan: 1011.0, angin: 0.8, arahTeks: 'NE', arahDeg: 45, hujan: 0.0 },
+            { waktu: '16 Nov 2026 15:00:12', suhu: 25.00, kelembaban: 43, tekanan: 1010.8, angin: 0.9, arahTeks: 'NE', arahDeg: 45, hujan: 0.0 },
+            { waktu: '16 Nov 2026 15:00:22', suhu: 25.20, kelembaban: 42, tekanan: 1010.6, angin: 0.8, arahTeks: 'NE', arahDeg: 45, hujan: 0.0 },
+            { waktu: '16 Nov 2026 15:00:27', suhu: 24.80, kelembaban: 44, tekanan: 1010.5, angin: 0.8, arahTeks: 'NE', arahDeg: 45, hujan: 0.0 },
+            { waktu: '16 Nov 2026 15:00:32', suhu: 25.30, kelembaban: 43, tekanan: 1010.2, angin: 0.8, arahTeks: 'NE', arahDeg: 45, hujan: 0.0 }
         ];
 
         // Navigasi menu sidebar
@@ -973,10 +1009,7 @@
                 angin: anginBaru,
                 arahTeks: arahPilih.teks,
                 arahDeg: arahPilih.deg,
-                hujan: 0.0,
-                cahaya: Math.floor(480 + Math.random() * 90),
-                radiasi: Math.floor(350 + Math.random() * 60),
-                uv: +(3.5 + Math.random() * 1.2).toFixed(1)
+                hujan: 0.0
             });
 
             if (riwayatSensor.length > 15) {
@@ -1004,10 +1037,7 @@
                         angin: d.kecepatanAngin,
                         arahTeks: d.arahAnginTeks,
                         arahDeg: d.arahAnginDerajat,
-                        hujan: d.curahHujan ?? 0.0,
-                        cahaya: d.intensitasCahaya ?? 0,
-                        radiasi: d.radiasiCahaya ?? 0,
-                        uv: d.sinarUv ?? 0
+                        hujan: d.curahHujan ?? 0.0
                     }));
                     renderTampilan();
                 }
@@ -1038,6 +1068,8 @@
             document.getElementById('last-update').innerText = `Data Terakhir: ${cur.waktu}`;
             document.getElementById('val-suhu').innerText = `${cur.suhu.toFixed(2)} °C`;
             document.getElementById('val-kelembaban').innerText = `${cur.kelembaban} %`;
+            document.getElementById('val-tekanan').innerText = `${cur.tekanan.toFixed(1)} hPa`;
+            document.getElementById('val-hujan').innerText = `${cur.hujan.toFixed(1)} mm`;
             document.getElementById('val-angin').innerText = `${cur.angin.toFixed(1)} m/s`;
             document.getElementById('val-arah').innerHTML = `${cur.arahTeks}<br><small>(${cur.arahDeg}°)</small>`;
 
@@ -1052,12 +1084,16 @@
             document.getElementById('delta-suhu').innerText = `${dSuhu >= 0 ? '↑ +' : '↓ '}${dSuhu} °C`;
             document.getElementById('delta-kelembaban').innerText = `${dHum >= 0 ? '↑ +' : '↓ '}${dHum}%`;
             document.getElementById('delta-angin').innerText = `${dAngin > 0 ? '↑ +' : dAngin < 0 ? '↓ ' : '→ '}${dAngin} m/s`;
+            const dTekanan = (cur.tekanan - prev.tekanan).toFixed(1);
+            document.getElementById('delta-tekanan').innerText = `${dTekanan > 0 ? '↑ +' : dTekanan < 0 ? '↓ ' : '→ '}${dTekanan} hPa`;
 
             // Kartu Informasi Cuaca Saat Ini
             document.getElementById('hero-suhu').innerText = `${cur.suhu.toFixed(2)} °C`;
             document.getElementById('sub-kelembaban').innerText = `${cur.kelembaban} %`;
             document.getElementById('sub-angin').innerText = `${cur.angin.toFixed(1)} m/s`;
             document.getElementById('sub-arah').innerText = `${cur.arahTeks} (${cur.arahDeg}°)`;
+            document.getElementById('sub-tekanan').innerText = `${cur.tekanan.toFixed(1)} hPa`;
+            document.getElementById('sub-hujan').innerText = `${cur.hujan.toFixed(1)} mm`;
 
             const heroIcon = document.getElementById('hero-icon');
             const heroKondisi = document.getElementById('hero-kondisi');
@@ -1065,7 +1101,7 @@
                 heroIcon.className = 'fa-solid fa-cloud-rain';
                 heroIcon.style.color = '#3b82f6';
                 heroKondisi.innerText = 'Hujan';
-            } else if (cur.cahaya > 650) {
+            } else if (cur.suhu >= 30 && cur.kelembaban < 70) {
                 heroIcon.className = 'fa-solid fa-sun';
                 heroIcon.style.color = '#f59e0b';
                 heroKondisi.innerText = 'Cerah';
@@ -1088,8 +1124,10 @@
                         <td>${row.waktu}</td>
                         <td>${row.suhu.toFixed(2)}</td>
                         <td>${row.kelembaban}</td>
+                        <td>${row.tekanan.toFixed(1)}</td>
                         <td>${row.angin.toFixed(1)}</td>
                         <td>${row.arahTeks}</td>
+                        <td>${row.hujan.toFixed(1)}</td>
                     </tr>`;
             });
 
@@ -1103,9 +1141,6 @@
                         <td>${row.angin.toFixed(1)}</td>
                         <td>${row.arahTeks} (${row.arahDeg}°)</td>
                         <td>${row.hujan.toFixed(1)}</td>
-                        <td>${row.cahaya}</td>
-                        <td>${row.radiasi}</td>
-                        <td>${row.uv}</td>
                     </tr>`;
             });
 
@@ -1161,6 +1196,18 @@
                             pointRadius: 2,
                             tension: 0.4,
                             fill: true
+                        },
+                        {
+                            label: 'Tekanan Udara (hPa)',
+                            data: riwayatSensor.map(d => d.tekanan),
+                            borderColor: '#8b5cf6',
+                            borderWidth: 2, pointRadius: 2, tension: 0.4, yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Curah Hujan (mm)',
+                            data: riwayatSensor.map(d => d.hujan),
+                            borderColor: '#0ea5e9',
+                            borderWidth: 2, pointRadius: 2, tension: 0.4, yAxisID: 'y2'
                         }
                     ]
                 },
@@ -1180,6 +1227,8 @@
                             suggestedMax: 80,
                             grid: { color: '#f1f5f9' }
                         },
+                        y1: { type: 'linear', display: false, position: 'right', grid: { drawOnChartArea: false } },
+                        y2: { type: 'linear', display: false, position: 'right', grid: { drawOnChartArea: false } },
                         x: {
                             grid: { display: false }
                         }
@@ -1212,6 +1261,8 @@
                 ambilDariApi();
                 timerId = setInterval(ambilDariApi, intervalMs);
             } else {
+                document.getElementById('st-db').innerText = 'Belum terhubung';
+                document.getElementById('st-koneksi').innerText = 'Simulasi';
                 renderTampilan();
                 timerId = setInterval(simulasiDataBaru, intervalMs);
             }
@@ -1219,9 +1270,9 @@
 
         // Ekspor riwayat 9 sensor ke CSV
         function exportCSV() {
-            const header = ['Waktu', 'Suhu (C)', 'Kelembaban (%)', 'Tekanan (hPa)', 'Kecepatan Angin (m/s)', 'Arah Angin', 'Derajat', 'Curah Hujan (mm)', 'Intensitas Cahaya (Lux)', 'Radiasi (W/m2)', 'Sinar UV'];
+            const header = ['Waktu', 'Suhu (C)', 'Kelembapan (%)', 'Tekanan Udara (hPa)', 'Kecepatan Angin (m/s)', 'Arah Angin', 'Arah Angin (Derajat)', 'Curah Hujan (mm)'];
             const rows = riwayatSensor.map(r => [
-                `"${r.waktu}"`, r.suhu, r.kelembaban, r.tekanan, r.angin, r.arahTeks, r.arahDeg, r.hujan, r.cahaya, r.radiasi, r.uv
+                `"${r.waktu}"`, r.suhu, r.kelembaban, r.tekanan, r.angin, r.arahTeks, r.arahDeg, r.hujan
             ]);
             const csvContent = 'data:text/csv;charset=utf-8,' + [header.join(','), ...rows.map(e => e.join(','))].join('\n');
             const link = document.createElement('a');
@@ -1234,6 +1285,15 @@
 
         // Inisialisasi saat halaman dimuat
         mulaiAutoRefresh();
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => console.log('PWA aktif:', registration.scope))
+                    .catch(error => console.error('Service Worker gagal:', error));
+            });
+        }
     </script>
 </body>
 </html>
