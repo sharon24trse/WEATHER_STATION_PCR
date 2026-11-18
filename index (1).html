@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Weather Station - Politeknik Caltex Riau</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --sidebar-bg: #15325b;
+            --sidebar-active: #2575fc;
+            --main-bg: #eef2f7;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--main-bg);
+            color: var(--text-dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ==================== SIDEBAR ==================== */
+        .sidebar {
+            width: 240px;
+            background-color: var(--sidebar-bg);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 16px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .brand-icon {
+            font-size: 38px;
+            color: #facc15;
+            margin-bottom: 8px;
+        }
+
+        .brand h2 {
+            font-size: 19px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .brand p {
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-top: 4px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #e2e8f0;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            background-color: var(--sidebar-active);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(37, 117, 252, 0.35);
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            padding-top: 18px;
+            text-align: center;
+            font-size: 11px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .pcr-logo {
+            font-weight: 800;
+            font-style: italic;
+            font-size: 14px;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: 0.4px;
+        }
+
+        .pcr-accent {
+            color: #ef4444;
+        }
+
+        .student-info {
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        /* ==================== MAIN CONTENT ==================== */
+        .main-content {
+            flex: 1;
+            padding: 24px 28px;
+            overflow-y: auto;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-title i {
+            font-size: 26px;
+            color: #2575fc;
+        }
+
+        .page-title h1 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .page-title p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .last-update-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timestamp-pill {
+            background: #ffffff;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-dark);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot-green {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .btn-refresh {
+            background-color: #2575fc;
+            color: #ffffff;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .btn-refresh:hover {
+            background-color: #1d63dc;
+        }
+
+        .spin {
+            animation: spinAnim 0.6s linear;
+        }
+
+        @keyframes spinAnim {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ==================== TOP 4 KPI CARDS ==================== */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        }
+
+        .kpi-card.temp { background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%); }
+        .kpi-card.hum  { background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%); }
+        .kpi-card.wind { background: linear-gradient(135deg, #f5f3ff 0%, #ffffff 100%); }
+        .kpi-card.dir  { background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); }
+
+        .kpi-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .temp .kpi-icon { background: #fee2e2; color: #ef4444; }
+        .hum .kpi-icon  { background: #dbeafe; color: #2563eb; }
+        .wind .kpi-icon { background: #ede9fe; color: #7c3aed; }
+        .dir .kpi-icon  { background: #dcfce7; color: #16a34a; }
+
+        .kpi-info span.label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .kpi-info h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 4px 0;
+            line-height: 1.15;
+        }
+
+        .kpi-info h3 small {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .badge-trend {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .trend-up   { background: #fee2e2; color: #dc2626; }
+        .trend-down { background: #dbeafe; color: #2563eb; }
+        .trend-flat { background: #ede9fe; color: #6d28d9; }
+
+        .compass-box {
+            margin-left: auto;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .compass-n {
+            position: absolute;
+            top: 2px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #ef4444;
+        }
+
+        .compass-arrow {
+            font-size: 20px;
+            color: #2563eb;
+            transition: transform 0.5s ease;
+        }
+
+        /* ==================== CONTENT GRID ==================== */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1.65fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .card-title i {
+            color: #2575fc;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 6px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .filter-btn {
+            border: none;
+            background: transparent;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #2575fc;
+            color: #ffffff;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 215px;
+            width: 100%;
+        }
+
+        /* ==================== CUACA SAAT INI ==================== */
+        .weather-hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 22px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .weather-hero i {
+            font-size: 58px;
+            color: #f59e0b;
+        }
+
+        .weather-hero-text h2 {
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .weather-hero-text p {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .weather-subgrid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            text-align: center;
+            padding-top: 18px;
+        }
+
+        .weather-subitem:not(:last-child) {
+            border-right: 1px solid var(--border-color);
+        }
+
+        .weather-subitem i {
+            color: #3b82f6;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .weather-subitem span {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .weather-subitem strong {
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        /* ==================== TABEL DATA ==================== */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-align: center;
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* ==================== STATUS SISTEM ==================== */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            text-align: center;
+            padding-top: 14px;
+        }
+
+        .status-circle {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .status-circle.blue  { background: #dbeafe; color: #2563eb; }
+        .status-circle.green { background: #dcfce7; color: #16a34a; }
+
+        .status-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .status-val {
+            font-size: 13px;
+            font-weight: 700;
+            color: #16a34a;
+        }
+
+        /* ==================== VIEW LAINNYA ==================== */
+        .section-view {
+            display: none;
+        }
+
+        .section-view.active {
+            display: block;
+        }
+
+        .btn-export, .btn-primary {
+            background-color: #2575fc;
+            color: #ffffff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-export:hover, .btn-primary:hover {
+            background-color: #1d63dc;
+        }
+
+        .settings-form {
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group select {
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .save-msg {
+            font-size: 13px;
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .about-content {
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .about-content ul {
+            margin: 8px 0 12px 20px;
+        }
+
+        @media (max-width: 1100px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+            }
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-cloud-sun"></i>
+                </div>
+                <h2>Weather<br>Station</h2>
+                <p>Monitoring System</p>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item active" onclick="gantiMenu('dashboard', this)">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" onclick="gantiMenu('riwayat', this)">
+                    <i class="fa-solid fa-chart-column"></i>
+                    <span>Riwayat Data</span>
+                </li>
+                <li class="nav-item" onclick="gantiMenu('pengaturan', this)">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Pengaturan</span>
+                </li>
+                <li class="nav-item" onclick="gantiMenu('tentang', this)">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Tentang</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="pcr-logo">
+                <span class="pcr-accent">Politeknik</span> Caltex Riau
+            </div>
+            <p class="student-info">NAMA: SHARON</p>
+            <p class="student-info">KELAS: 2 TRSE A</p>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="page-title">
+                <i class="fa-solid fa-chart-simple"></i>
+                <div>
+                    <h1>Monitoring Weather Station</h1>
+                    <p>Real-Time Data dari Sensor</p>
+                </div>
+            </div>
+
+            <div class="last-update-box">
+                <div class="timestamp-pill">
+                    <span class="dot-green" id="status-dot"></span>
+                    <span id="last-update">Data Terakhir: 16 Nov 2026, 15:00:32</span>
+                </div>
+                <button class="btn-refresh" onclick="perbaruiManual()" title="Refresh Data">
+                    <i class="fa-solid fa-rotate-right" id="refresh-icon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- VIEW 1: DASHBOARD UTAMA -->
+        <section id="view-dashboard" class="section-view active">
+            <!-- 4 KARTU METRIK UTAMA -->
+            <div class="kpi-grid">
+                <div class="kpi-card temp">
+                    <div class="kpi-icon">
+                        <i class="fa-solid fa-temperature-three-quarters"></i>
+                    </div>
+                    <div class="kpi-info">
+                        <span class="label">Suhu</span>
+                        <h3 id="val-suhu">25.30 °C</h3>
+                        <span class="badge-trend trend-up" id="delta-suhu">↑ +0.5 °C</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card hum">
+                    <div class="kpi-icon">
+                        <i class="fa-solid fa-droplet"></i>
+                    </div>
+                    <div class="kpi-info">
+                        <span class="label">Kelembapan</span>
+                        <h3 id="val-kelembaban">43 %</h3>
+                        <span class="badge-trend trend-down" id="delta-kelembaban">↓ -1%</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card wind">
+                    <div class="kpi-icon">
+                        <i class="fa-solid fa-wind"></i>
+                    </div>
+                    <div class="kpi-info">
+                        <span class="label">Kecepatan Angin</span>
+                        <h3 id="val-angin">0.8 m/s</h3>
+                        <span class="badge-trend trend-flat" id="delta-angin">→ 0.0 m/s</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card dir">
+                    <div class="kpi-icon">
+                        <i class="fa-regular fa-compass"></i>
+                    </div>
+                    <div class="kpi-info">
+                        <span class="label">Arah Angin</span>
+                        <h3 id="val-arah">NE<br><small>(45°)</small></h3>
+                    </div>
+                    <div class="compass-box" title="Arah Mata Angin">
+                        <span class="compass-n">N</span>
+                        <i class="fa-solid fa-location-arrow compass-arrow" id="compass-needle"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRAFIK & INFORMASI CUACA SAAT INI -->
+            <div class="content-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Grafik Data Sensor</span>
+                        </div>
+                        <div class="filter-group">
+                            <button class="filter-btn active" onclick="ubahRentang('1h', this)">1 Jam</button>
+                            <button class="filter-btn" onclick="ubahRentang('6h', this)">6 Jam</button>
+                            <button class="filter-btn" onclick="ubahRentang('1d', this)">1 Hari</button>
+                            <button class="filter-btn" onclick="ubahRentang('1w', this)">1 Minggu</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="sensorChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fa-solid fa-sun"></i>
+                            <span>Informasi Cuaca Saat Ini</span>
+                        </div>
+                    </div>
+                    <div class="weather-hero">
+                        <i class="fa-solid fa-cloud-sun" id="hero-icon"></i>
+                        <div class="weather-hero-text">
+                            <h2 id="hero-suhu">25.30 °C</h2>
+                            <p id="hero-kondisi">Cerah Berawan</p>
+                        </div>
+                    </div>
+                    <div class="weather-subgrid">
+                        <div class="weather-subitem">
+                            <i class="fa-solid fa-droplet"></i>
+                            <span>Kelembapan</span>
+                            <strong id="sub-kelembaban">43 %</strong>
+                        </div>
+                        <div class="weather-subitem">
+                            <i class="fa-solid fa-wind"></i>
+                            <span>Angin</span>
+                            <strong id="sub-angin">0.8 m/s</strong>
+                        </div>
+                        <div class="weather-subitem">
+                            <i class="fa-solid fa-location-arrow"></i>
+                            <span>Arah Angin</span>
+                            <strong id="sub-arah">NE (45°)</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABEL DATA TERBARU & STATUS SISTEM -->
+            <div class="content-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fa-solid fa-table-list"></i>
+                            <span>Tabel Data Terbaru</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Waktu</th>
+                                    <th>Suhu (°C)</th>
+                                    <th>Kelembapan (%)</th>
+                                    <th>Kecepatan Angin (m/s)</th>
+                                    <th>Arah Angin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabel-ringkas"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fa-solid fa-bell"></i>
+                            <span>Status Sistem</span>
+                        </div>
+                    </div>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <div class="status-circle blue">
+                                <i class="fa-solid fa-wifi"></i>
+                            </div>
+                            <span class="status-label">Koneksi</span>
+                            <span class="status-val" id="st-koneksi">Online</span>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-circle blue">
+                                <i class="fa-solid fa-database"></i>
+                            </div>
+                            <span class="status-label">Database</span>
+                            <span class="status-val" id="st-db">Terhubung</span>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-circle green">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <span class="status-label">Sensor</span>
+                            <span class="status-val" id="st-sensor">Normal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: RIWAYAT DATA (9 PARAMETER PROPOSAL PCR) -->
+        <section id="view-riwayat" class="section-view">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fa-solid fa-database"></i>
+                        <span>Riwayat Lengkap 9 Parameter Sensor Cuaca</span>
+                    </div>
+                    <button class="btn-export" onclick="exportCSV()">
+                        <i class="fa-solid fa-file-csv"></i> Unduh CSV
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Suhu (°C)</th>
+                                <th>Kelembapan (%)</th>
+                                <th>Tekanan (hPa)</th>
+                                <th>Angin (m/s)</th>
+                                <th>Arah Angin</th>
+                                <th>Curah Hujan (mm)</th>
+                                <th>Cahaya (Lux)</th>
+                                <th>Radiasi (W/m²)</th>
+                                <th>Sinar UV</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-lengkap"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: PENGATURAN -->
+        <section id="view-pengaturan" class="section-view">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>Pengaturan Sumber Data & Interval</span>
+                    </div>
+                </div>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="mode-sumber">Sumber Data Dashboard:</label>
+                        <select id="mode-sumber" onchange="ubahModeSumber()">
+                            <option value="simulasi" selected>Mode Simulasi Real-Time (GitHub Pages / Offline)</option>
+                            <option value="api">Mode Live Server (Backend Java + MySQL)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="grup-api-url" style="display: none;">
+                        <label for="api-url">URL Endpoint API Backend Java:</label>
+                        <input type="text" id="api-url" value="http://localhost:8080/api/weather/dashboard">
+                    </div>
+                    <div class="form-group">
+                        <label for="interval-refresh">Interval Pembaruan Otomatis (Detik):</label>
+                        <input type="number" id="interval-refresh" value="5" min="1" max="60">
+                    </div>
+                    <button class="btn-primary" onclick="simpanPengaturan()">Simpan Pengaturan</button>
+                    <p id="pesan-simpan" class="save-msg"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: TENTANG -->
+        <section id="view-tentang" class="section-view">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Tentang Proyek Weather Station PCR</span>
+                    </div>
+                </div>
+                <div class="about-content">
+                    <p><strong>Judul Proyek:</strong> Perancangan Weather Station Berbasis IoT (ESP32)</p>
+                    <p><strong>Institusi:</strong> Program Studi Teknologi Rekayasa Sistem Elektronika (TRSE), Politeknik Caltex Riau</p>
+                    <p><strong>Parameter Terukur (9 Parameter):</strong></p>
+                    <ul>
+                        <li>Suhu, Kelembapan, dan Tekanan Udara (Sensor BME280)</li>
+                        <li>Intensitas Cahaya (Sensor GY-302 / BH1750)</li>
+                        <li>Kecepatan Angin (Anemometer) & Arah Angin (Wind Vane)</li>
+                        <li>Curah Hujan (Rain Gauge Tipping Bucket)</li>
+                        <li>Radiasi Matahari (Pyranometer) & Indeks Sinar UV</li>
+                    </ul>
+                    <p><strong>Data Communication & Database:</strong> Sharon Laina Sidauruk (2 TRSE A)</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let chartInstance = null;
+        let rentangAktif = '1h';
+        let modeSumber = 'simulasi';
+        let apiUrl = 'http://localhost:8080/api/weather/dashboard';
+        let intervalMs = 5000;
+        let timerId = null;
+
+        // Data awal simulasi (9 parameter sesuai proposal PCR)
+        let riwayatSensor = [
+            { waktu: '16 Nov 2026 14:59:52', suhu: 24.90, kelembaban: 44, tekanan: 1011.1, angin: 0.7, arahTeks: 'NE', arahDeg: 45, hujan: 0.0, cahaya: 480, radiasi: 340, uv: 3.6 },
+            { waktu: '16 Nov 2026 15:00:02', suhu: 25.10, kelembaban: 44, tekanan: 1011.0, angin: 0.8, arahTeks: 'NE', arahDeg: 45, hujan: 0.0, cahaya: 495, radiasi: 355, uv: 3.8 },
+            { waktu: '16 Nov 2026 15:00:12', suhu: 25.00, kelembaban: 43, tekanan: 1010.8, angin: 0.9, arahTeks: 'NE', arahDeg: 45, hujan: 0.0, cahaya: 510, radiasi: 370, uv: 3.9 },
+            { waktu: '16 Nov 2026 15:00:22', suhu: 25.20, kelembaban: 42, tekanan: 1010.6, angin: 0.8, arahTeks: 'NE', arahDeg: 45, hujan: 0.0, cahaya: 515, radiasi: 378, uv: 4.0 },
+            { waktu: '16 Nov 2026 15:00:27', suhu: 24.80, kelembaban: 44, tekanan: 1010.5, angin: 0.8, arahTeks: 'NE', arahDeg: 45, hujan: 0.0, cahaya: 505, radiasi: 365, uv: 3.9 },
+            { waktu: '16 Nov 2026 15:00:32', suhu: 25.30, kelembaban: 43, tekanan: 1010.2, angin: 0.8, arahTeks: 'NE', arahDeg: 45, hujan: 0.0, cahaya: 520, radiasi: 385, uv: 4.1 }
+        ];
+
+        // Navigasi menu sidebar
+        function gantiMenu(menu, el) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+            document.querySelectorAll('.section-view').forEach(view => view.classList.remove('active'));
+            document.getElementById('view-' + menu).classList.add('active');
+        }
+
+        // Filter rentang waktu grafik
+        function ubahRentang(range, btn) {
+            rentangAktif = range;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (modeSumber === 'api') {
+                ambilDariApi();
+            } else {
+                renderTampilan();
+            }
+        }
+
+        // Format waktu saat ini
+        function formatWaktuSekarang() {
+            const now = new Date();
+            const bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${pad(now.getDate())} ${bulan[now.getMonth()]} ${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        }
+
+        // Generator data simulasi real-time
+        function simulasiDataBaru() {
+            const terakhir = riwayatSensor[riwayatSensor.length - 1];
+            const suhuBaru = +(terakhir.suhu + (Math.random() * 0.6 - 0.3)).toFixed(2);
+            const humBaru = Math.min(95, Math.max(35, terakhir.kelembaban + Math.floor(Math.random() * 3 - 1)));
+            const anginBaru = +Math.max(0.1, terakhir.angin + (Math.random() * 0.4 - 0.2)).toFixed(1);
+
+            const daftarArah = [
+                { teks: 'N', deg: 0 },
+                { teks: 'NE', deg: 45 },
+                { teks: 'E', deg: 90 },
+                { teks: 'SE', deg: 135 }
+            ];
+            const arahPilih = daftarArah[Math.floor(Math.random() * 3)];
+
+            riwayatSensor.push({
+                waktu: formatWaktuSekarang(),
+                suhu: suhuBaru,
+                kelembaban: humBaru,
+                tekanan: +(1010 + Math.random() * 2).toFixed(1),
+                angin: anginBaru,
+                arahTeks: arahPilih.teks,
+                arahDeg: arahPilih.deg,
+                hujan: 0.0,
+                cahaya: Math.floor(480 + Math.random() * 90),
+                radiasi: Math.floor(350 + Math.random() * 60),
+                uv: +(3.5 + Math.random() * 1.2).toFixed(1)
+            });
+
+            if (riwayatSensor.length > 15) {
+                riwayatSensor.shift();
+            }
+            renderTampilan();
+        }
+
+        // Mengambil data dari Backend Java + MySQL (jika Mode Live API aktif)
+        async function ambilDariApi() {
+            try {
+                const res = await fetch(`${apiUrl}?range=${rentangAktif}`);
+                const data = await res.json();
+
+                document.getElementById('st-koneksi').innerText = 'Online';
+                document.getElementById('st-koneksi').style.color = '#16a34a';
+                document.getElementById('st-db').innerText = data.dbConnected ? 'Terhubung' : 'Terputus';
+
+                if (data.tableData && data.tableData.length > 0) {
+                    riwayatSensor = [...data.tableData].reverse().map(d => ({
+                        waktu: d.waktu,
+                        suhu: d.suhu,
+                        kelembaban: Math.round(d.kelembaban),
+                        tekanan: d.tekananUdara ?? 1010.0,
+                        angin: d.kecepatanAngin,
+                        arahTeks: d.arahAnginTeks,
+                        arahDeg: d.arahAnginDerajat,
+                        hujan: d.curahHujan ?? 0.0,
+                        cahaya: d.intensitasCahaya ?? 0,
+                        radiasi: d.radiasiCahaya ?? 0,
+                        uv: d.sinarUv ?? 0
+                    }));
+                    renderTampilan();
+                }
+            } catch (err) {
+                document.getElementById('st-koneksi').innerText = 'Terputus';
+                document.getElementById('st-koneksi').style.color = '#dc2626';
+            }
+        }
+
+        // Refresh manual tombol kanan atas
+        function perbaruiManual() {
+            const icon = document.getElementById('refresh-icon');
+            icon.classList.add('spin');
+            setTimeout(() => icon.classList.remove('spin'), 600);
+
+            if (modeSumber === 'api') {
+                ambilDariApi();
+            } else {
+                simulasiDataBaru();
+            }
+        }
+
+        // Render semua kartu, tabel, dan grafik
+        function renderTampilan() {
+            const cur = riwayatSensor[riwayatSensor.length - 1];
+            const prev = riwayatSensor[riwayatSensor.length - 2] || cur;
+
+            document.getElementById('last-update').innerText = `Data Terakhir: ${cur.waktu}`;
+            document.getElementById('val-suhu').innerText = `${cur.suhu.toFixed(2)} °C`;
+            document.getElementById('val-kelembaban').innerText = `${cur.kelembaban} %`;
+            document.getElementById('val-angin').innerText = `${cur.angin.toFixed(1)} m/s`;
+            document.getElementById('val-arah').innerHTML = `${cur.arahTeks}<br><small>(${cur.arahDeg}°)</small>`;
+
+            // Rotasi jarum kompas (ikon fa-location-arrow default menunjuk 45 derajat / NE)
+            document.getElementById('compass-needle').style.transform = `rotate(${cur.arahDeg - 45}deg)`;
+
+            // Selisih nilai (delta)
+            const dSuhu = (cur.suhu - prev.suhu).toFixed(1);
+            const dHum = cur.kelembaban - prev.kelembaban;
+            const dAngin = (cur.angin - prev.angin).toFixed(1);
+
+            document.getElementById('delta-suhu').innerText = `${dSuhu >= 0 ? '↑ +' : '↓ '}${dSuhu} °C`;
+            document.getElementById('delta-kelembaban').innerText = `${dHum >= 0 ? '↑ +' : '↓ '}${dHum}%`;
+            document.getElementById('delta-angin').innerText = `${dAngin > 0 ? '↑ +' : dAngin < 0 ? '↓ ' : '→ '}${dAngin} m/s`;
+
+            // Kartu Informasi Cuaca Saat Ini
+            document.getElementById('hero-suhu').innerText = `${cur.suhu.toFixed(2)} °C`;
+            document.getElementById('sub-kelembaban').innerText = `${cur.kelembaban} %`;
+            document.getElementById('sub-angin').innerText = `${cur.angin.toFixed(1)} m/s`;
+            document.getElementById('sub-arah').innerText = `${cur.arahTeks} (${cur.arahDeg}°)`;
+
+            const heroIcon = document.getElementById('hero-icon');
+            const heroKondisi = document.getElementById('hero-kondisi');
+            if (cur.hujan > 0) {
+                heroIcon.className = 'fa-solid fa-cloud-rain';
+                heroIcon.style.color = '#3b82f6';
+                heroKondisi.innerText = 'Hujan';
+            } else if (cur.cahaya > 650) {
+                heroIcon.className = 'fa-solid fa-sun';
+                heroIcon.style.color = '#f59e0b';
+                heroKondisi.innerText = 'Cerah';
+            } else {
+                heroIcon.className = 'fa-solid fa-cloud-sun';
+                heroIcon.style.color = '#f59e0b';
+                heroKondisi.innerText = 'Cerah Berawan';
+            }
+
+            // Tabel Ringkas & Tabel Lengkap (terbaru di atas)
+            const dataTerbalik = [...riwayatSensor].reverse();
+            const tbodyRingkas = document.getElementById('tabel-ringkas');
+            const tbodyLengkap = document.getElementById('tabel-lengkap');
+            tbodyRingkas.innerHTML = '';
+            tbodyLengkap.innerHTML = '';
+
+            dataTerbalik.slice(0, 3).forEach(row => {
+                tbodyRingkas.innerHTML += `
+                    <tr>
+                        <td>${row.waktu}</td>
+                        <td>${row.suhu.toFixed(2)}</td>
+                        <td>${row.kelembaban}</td>
+                        <td>${row.angin.toFixed(1)}</td>
+                        <td>${row.arahTeks}</td>
+                    </tr>`;
+            });
+
+            dataTerbalik.forEach(row => {
+                tbodyLengkap.innerHTML += `
+                    <tr>
+                        <td>${row.waktu}</td>
+                        <td>${row.suhu.toFixed(2)}</td>
+                        <td>${row.kelembaban}</td>
+                        <td>${row.tekanan}</td>
+                        <td>${row.angin.toFixed(1)}</td>
+                        <td>${row.arahTeks} (${row.arahDeg}°)</td>
+                        <td>${row.hujan.toFixed(1)}</td>
+                        <td>${row.cahaya}</td>
+                        <td>${row.radiasi}</td>
+                        <td>${row.uv}</td>
+                    </tr>`;
+            });
+
+            renderChart();
+        }
+
+        // Render Grafik Chart.js
+        function renderChart() {
+            if (typeof Chart === 'undefined') return;
+
+            const labels = riwayatSensor.map(d => {
+                const parts = d.waktu.split(' ');
+                const jam = parts[parts.length - 1] || d.waktu;
+                return jam.substring(0, 5);
+            });
+
+            const ctx = document.getElementById('sensorChart').getContext('2d');
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Suhu (°C)',
+                            data: riwayatSensor.map(d => d.suhu),
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.10)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Kelembaban (%)',
+                            data: riwayatSensor.map(d => d.kelembaban),
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.14)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Kecepatan Angin (m/s)',
+                            data: riwayatSensor.map(d => d.angin),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.10)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: 80,
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Pengaturan mode sumber data
+        function ubahModeSumber() {
+            const mode = document.getElementById('mode-sumber').value;
+            document.getElementById('grup-api-url').style.display = mode === 'api' ? 'flex' : 'none';
+        }
+
+        function simpanPengaturan() {
+            modeSumber = document.getElementById('mode-sumber').value;
+            apiUrl = document.getElementById('api-url').value.trim();
+            const detik = parseInt(document.getElementById('interval-refresh').value, 10) || 5;
+            intervalMs = detik * 1000;
+
+            mulaiAutoRefresh();
+            const msg = document.getElementById('pesan-simpan');
+            msg.innerText = 'Pengaturan berhasil disimpan!';
+            setTimeout(() => { msg.innerText = ''; }, 3000);
+        }
+
+        function mulaiAutoRefresh() {
+            if (timerId) clearInterval(timerId);
+            if (modeSumber === 'api') {
+                ambilDariApi();
+                timerId = setInterval(ambilDariApi, intervalMs);
+            } else {
+                renderTampilan();
+                timerId = setInterval(simulasiDataBaru, intervalMs);
+            }
+        }
+
+        // Ekspor riwayat 9 sensor ke CSV
+        function exportCSV() {
+            const header = ['Waktu', 'Suhu (C)', 'Kelembaban (%)', 'Tekanan (hPa)', 'Kecepatan Angin (m/s)', 'Arah Angin', 'Derajat', 'Curah Hujan (mm)', 'Intensitas Cahaya (Lux)', 'Radiasi (W/m2)', 'Sinar UV'];
+            const rows = riwayatSensor.map(r => [
+                `"${r.waktu}"`, r.suhu, r.kelembaban, r.tekanan, r.angin, r.arahTeks, r.arahDeg, r.hujan, r.cahaya, r.radiasi, r.uv
+            ]);
+            const csvContent = 'data:text/csv;charset=utf-8,' + [header.join(','), ...rows.map(e => e.join(','))].join('\n');
+            const link = document.createElement('a');
+            link.setAttribute('href', encodeURI(csvContent));
+            link.setAttribute('download', 'data_weather_station_pcr.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Inisialisasi saat halaman dimuat
+        mulaiAutoRefresh();
+    </script>
+</body>
+</html>
