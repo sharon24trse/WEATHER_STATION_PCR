@@ -1,0 +1,25 @@
+{
+  "id": "./",
+  "name": "Weather Station PCR",
+  "short_name": "Weather Station",
+  "description": "Aplikasi Monitoring Weather Station berbasis IoT Politeknik Caltex Riau",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eef2f7",
+  "theme_color": "#15325b",
+  "categories": [
+    "weather",
+    "utilities"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
